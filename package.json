@@ -1,7 +1,7 @@
 {
   "name": "nft-web3-dapp",
   "version": "0.0.1",
-  "homepage": "https://salvo1404.github.io",
+  "homepage": "https://salvo1404.github.io/nft-web3-dapp",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
