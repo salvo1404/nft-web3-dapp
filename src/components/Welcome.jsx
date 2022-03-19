@@ -26,7 +26,7 @@ const Input = ({ placeholder, name, type, value, handleChange }) => (
 const Welcome = () => {
   const [formData, setformData] = useState({ addressTo: "", amount: "", keyword: "", message: "" });
   const [currentAccount, setCurrentAccount] = useState("");
-  const [numerToMint, setNumerToMint] = useState(0);
+  const [numerToMint, setNumerToMint] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   // const { currentAccount, connectWallet, handleChange, sendTransaction, formData, isLoading } = useState(0);
 
@@ -147,19 +147,27 @@ const Welcome = () => {
             <div className="flex w-full mf:flex-row items-center justify-around">
                 <button
                   type="button"
-                  onClick={handleSubmit}
+                  onClick={() => {
+                      if(numerToMint>1)
+                      setNumerToMint((numerToMint) => (numerToMint - 1))
+                    }
+                  }
                   className="w-24 h-24 m-4 text-white border-[1px] border-[#3d4f7c] hover:bg-[#3d4f7c] rounded-full cursor-pointer"
                 >
                   -
                 </button>
 
-                <p className="text-white font-light">
+                <p className="text-white font-semibold text-lg">
                   {numerToMint}
                 </p>
 
                 <button
                   type="button"
-                  onClick={handleSubmit}
+                  onClick={() => {
+                    if(numerToMint<10)
+                    setNumerToMint((numerToMint) => (numerToMint + 1))
+                  }
+                }
                   className="w-24 h-24 m-4 text-white border-[1px] border-[#3d4f7c] hover:bg-[#3d4f7c] rounded-full cursor-pointer"
                 >
                   +
