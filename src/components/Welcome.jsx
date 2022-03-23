@@ -8,34 +8,38 @@ import { ethers } from 'ethers';
 // import { shortenAddress } from "../utils/shortenAddress";
 import { Loader } from ".";
 
-const companyCommonStyles = "min-h-[70px] sm:px-0 px-2 sm:min-w-[120px] flex justify-center items-center border-[0.5px] border-gray-400 text-sm font-light text-white";
+import GoodFellas from '../artifacts/contracts/GoodFellas.sol/GoodFellas.json';
 
+const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
 
+const provider = new ethers.providers.Web3Provider(window.ethereum);
 
+// get the signer
+const signer = provider.getSigner();
 
-const Input = ({ placeholder, name, type, value, handleChange }) => (
-  <input
-    placeholder={placeholder}
-    type={type}
-    step="0.0001"
-    value={value}
-    onChange={(e) => handleChange(e, name)}
-    className="my-2 w-full rounded-sm p-2 outline-none bg-transparent text-white border-none text-sm white-glassmorphism"
-  />
-);
+// get the smart contract (GoodFellas Contract)
+const contract = new ethers.Contract(contractAddress, GoodFellas.abi, signer);
 
 const Welcome = () => {
   const [formData, setformData] = useState({ addressTo: "", amount: "", keyword: "", message: "" });
   const [currentAccount, setCurrentAccount] = useState("");
   const [currentBalance, setCurrentBalance] = useState(0);
+  const [tokenCount, setTokenCount] = useState(0);
+  const [tokenId, setTokenId] = useState(1);
+  const [totalSupply, setTotalSupply] = useState(0);
   const [numerToMint, setNumerToMint] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  // const { currentAccount, connectWallet, handleChange, sendTransaction, formData, isLoading } = useState(0);
+
+  const contentId = import.meta.env.VITE_CONTENT_ID;
+  const metadataURI = `ipfs://${contentId}/${tokenId}.json`;
+  const imageURI = `https://gateway.pinata.cloud/ipfs/${contentId}/${tokenId}.svg`;
+  const costSingleToken = 0.2;
 
   useEffect(() => {
     checkIfWalletIsConnect();
     checkBalance();
-  }, [currentAccount]);
+    getCount();
+  }, [currentAccount,tokenCount, tokenId, totalSupply]);
 
 
   const handleSubmit = (e) => {
@@ -72,7 +76,6 @@ const Welcome = () => {
       if (accounts.length) {
         setCurrentAccount(accounts[0]);
 
-        // getAllTransactions();
       } else {
         console.log("No accounts found");
       }
@@ -91,8 +94,47 @@ const Welcome = () => {
     setCurrentBalance(ethers.utils.formatEther(balance));
   };
 
-  const handleChange = (e, name) => {
-    setformData((prevState) => ({ ...prevState, [name]: e.target.value }));
+  const getCount = async () => {
+    if(!currentAccount) {
+      return;
+    }
+
+    const count = await contract.count();
+    setTokenCount(parseInt(count));
+    setTokenId(parseInt(count) + 1);
+
+    const totalSupply = await contract.totalSupply();
+    setTotalSupply(parseInt(totalSupply));
+  };
+
+  const singleMint = async () => {  
+    try {
+        // User Address
+        const userAddress = await signer.getAddress();
+        const result = await contract.singleMint(userAddress, metadataURI, {
+          value: ethers.utils.parseEther((costSingleToken*numerToMint).toString()),
+        });
+        await result.wait();
+    } catch (error) {
+        console.log(error)
+        alert(error);
+    }
+
+    getCount();
+  };
+
+  const freeMint = async () => {  
+    try {
+        // VIP Address
+        const vipAddress1 = import.meta.env.VITE_VIP_ADDRESS_1;
+        const result = await contract.singleMint(vipAddress1, metadataURI);
+        await result.wait();
+    } catch (error) {
+        console.log(error)
+        alert(error);
+    }
+
+    getCount();
   };
 
   const shortenAddress = (address) => `${address.slice(0, 5)}...${address.slice(address.length - 4)}`;
@@ -144,14 +186,14 @@ const Welcome = () => {
                 </p>
                 <div className="flex justify-between items-start">
                   <div>
-                  <p className="text-white font-semibold text-lg mt-1">
-                  {formatBalance(currentBalance)}
-                  </p>
+                    <p className="text-white font-semibold text-lg mt-1">
+                    {formatBalance(currentBalance)}
+                    </p>
                   </div>
-                  <div>
-                  <p className="text-white font-bold text-lg mt-1">
-                  Ethereum
-                  </p>
+                    <div>
+                    <p className="text-white font-bold text-lg mt-1">
+                    Ethereum
+                    </p>
                   </div>
                 </div>
               </div>
@@ -163,13 +205,10 @@ const Welcome = () => {
 
         <div className="flex flex-col flex-1 items-start justify-start w-full mf:mt-0 mt-10">
 
-
-          
-
           <div className="p-5 sm:w-96 w-full flex flex-col justify-start items-start blue-glassmorphism">
-            <p className="text-white font-semibold text-lg mt-1">Price:  0.2 ETH</p>
+            <p className="text-white font-semibold text-lg mt-1">Price:  {(numerToMint*costSingleToken).toString().slice(0,4)} ETH</p>
             <p className="text-white font-semibold text-lg mt-1">Max:  10 NFT per Wallet</p>
-            <p className="text-white font-semibold text-lg mt-1">Supply:  0/8000 NFT</p>
+            <p className="text-white font-semibold text-lg mt-1">Supply:  {tokenCount}/{totalSupply} Tokens</p>
             
 
             <div className="h-[1px] w-full bg-gray-400 my-4 mt-12" />
@@ -211,7 +250,7 @@ const Welcome = () => {
               : (
                 <button
                   type="button"
-                  onClick={handleSubmit}
+                  onClick={singleMint}
                   className="text-white w-full mt-2 border-[1px] p-2 border-[#3d4f7c] hover:bg-[#3d4f7c] rounded-full cursor-pointer"
                 >
                   Mint Now

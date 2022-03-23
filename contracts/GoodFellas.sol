@@ -83,7 +83,7 @@ contract GoodFellas is ERC721, ERC721URIStorage, Ownable {
     ) public payable returns (uint256) {
         require(existingURIs[metadataURI] != 1, 'NFT already minted!');
         require (msg.value >= 0.0001 ether, 'Not enough ETH sent: check price.');
-        require (_tokenIdCounter.current() < 10, 'Whitelist mint is over!');
+        require (_tokenIdCounter.current() < 50, 'Whitelist mint is over!');
 
         uint256 newItemId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
