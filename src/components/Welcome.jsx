@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { AiFillPlayCircle } from "react-icons/ai";
 import { SiEthereum } from "react-icons/si";
 import { BsInfoCircle } from "react-icons/bs";
+import { ethers } from 'ethers';
 
 // import { shortenAddress } from "../utils/shortenAddress";
 import { Loader } from ".";
@@ -26,13 +27,15 @@ const Input = ({ placeholder, name, type, value, handleChange }) => (
 const Welcome = () => {
   const [formData, setformData] = useState({ addressTo: "", amount: "", keyword: "", message: "" });
   const [currentAccount, setCurrentAccount] = useState("");
+  const [currentBalance, setCurrentBalance] = useState(0);
   const [numerToMint, setNumerToMint] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   // const { currentAccount, connectWallet, handleChange, sendTransaction, formData, isLoading } = useState(0);
 
   useEffect(() => {
     checkIfWalletIsConnect();
-  }, []);
+    checkBalance();
+  }, [currentAccount]);
 
 
   const handleSubmit = (e) => {
@@ -78,11 +81,29 @@ const Welcome = () => {
     }
   };
 
+  const checkBalance = async () => {
+    if(!currentAccount) {
+      return;
+    }
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const balance = await provider.getBalance(currentAccount);
+    setCurrentBalance(ethers.utils.formatEther(balance));
+  };
+
   const handleChange = (e, name) => {
     setformData((prevState) => ({ ...prevState, [name]: e.target.value }));
   };
 
   const shortenAddress = (address) => `${address.slice(0, 5)}...${address.slice(address.length - 4)}`;
+
+  const formatBalance = (balance) => {
+    if (balance) {
+      return balance.slice(0,5) + ' ETH';
+    }
+
+    return '-';
+  }
 
   return (
     <div className="flex w-full justify-center items-center">
@@ -100,7 +121,7 @@ const Welcome = () => {
             <button
               type="button"
               onClick={connectWallet}
-              className="flex flex-row justify-center items-center my-5 bg-[#2952e3] p-3 rounded-full cursor-pointer hover:bg-[#2546bd]"
+              className="flex flex-row justify-center items-center my-5 bg-[#2952e3] p-3 pr-6 rounded-full cursor-pointer hover:bg-[#2546bd]"
             >
               <AiFillPlayCircle className="text-white mr-2" />
               <p className="text-white text-base font-semibold">
@@ -121,9 +142,18 @@ const Welcome = () => {
                 <p className="text-white font-light text-sm">
                   {shortenAddress(currentAccount)}
                 </p>
-                <p className="text-white font-semibold text-lg mt-1">
+                <div className="flex justify-between items-start">
+                  <div>
+                  <p className="text-white font-semibold text-lg mt-1">
+                  {formatBalance(currentBalance)}
+                  </p>
+                  </div>
+                  <div>
+                  <p className="text-white font-bold text-lg mt-1">
                   Ethereum
-                </p>
+                  </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -142,7 +172,7 @@ const Welcome = () => {
             <p className="text-white font-semibold text-lg mt-1">Supply:  0/8000 NFT</p>
             
 
-            <div className="h-[1px] w-full bg-gray-400 my-4" />
+            <div className="h-[1px] w-full bg-gray-400 my-4 mt-12" />
 
             <div className="flex w-full mf:flex-row items-center justify-around">
                 <button
