@@ -4,14 +4,11 @@ import { AiFillPlayCircle } from "react-icons/ai";
 import { SiEthereum } from "react-icons/si";
 import { BsInfoCircle } from "react-icons/bs";
 import { ethers } from 'ethers';
-
-// import { shortenAddress } from "../utils/shortenAddress";
 import { Loader } from ".";
 
+// --------- Contract creation -------------
 import GoodFellas from '../artifacts/contracts/GoodFellas.sol/GoodFellas.json';
-
 const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
-
 const provider = new ethers.providers.Web3Provider(window.ethereum);
 
 // get the signer
@@ -21,7 +18,6 @@ const signer = provider.getSigner();
 const contract = new ethers.Contract(contractAddress, GoodFellas.abi, signer);
 
 const Welcome = () => {
-  const [formData, setformData] = useState({ addressTo: "", amount: "", keyword: "", message: "" });
   const [currentAccount, setCurrentAccount] = useState("");
   const [currentBalance, setCurrentBalance] = useState(0);
   const [tokenCount, setTokenCount] = useState(0);
@@ -109,18 +105,26 @@ const Welcome = () => {
 
   const singleMint = async () => {  
     try {
+        if(!currentAccount) {
+          alert('Connect your wallet');
+          return;
+        }
+
         // User Address
+        setIsLoading(true);
         const userAddress = await signer.getAddress();
         const result = await contract.singleMint(userAddress, metadataURI, {
           value: ethers.utils.parseEther((costSingleToken*numerToMint).toString()),
         });
         await result.wait();
     } catch (error) {
+        setIsLoading(false);
         console.log(error)
         alert(error);
     }
 
     getCount();
+    setIsLoading(false);
   };
 
   const freeMint = async () => {  
@@ -143,7 +147,6 @@ const Welcome = () => {
     if (balance) {
       return balance.slice(0,5) + ' ETH';
     }
-
     return '-';
   }
 
@@ -208,7 +211,9 @@ const Welcome = () => {
           <div className="p-5 sm:w-96 w-full flex flex-col justify-start items-start blue-glassmorphism">
             <p className="text-white font-semibold text-lg mt-1">Price:  {(numerToMint*costSingleToken).toString().slice(0,4)} ETH</p>
             <p className="text-white font-semibold text-lg mt-1">Max:  10 NFT per Wallet</p>
-            <p className="text-white font-semibold text-lg mt-1">Supply:  {tokenCount}/{totalSupply} Tokens</p>
+            {currentAccount && (
+              <p className="text-white font-semibold text-lg mt-1">Supply:  {tokenCount}/{totalSupply} NFTs</p>
+            )}
             
 
             <div className="h-[1px] w-full bg-gray-400 my-4 mt-12" />
@@ -248,13 +253,14 @@ const Welcome = () => {
             {isLoading
               ? <Loader />
               : (
-                <button
-                  type="button"
-                  onClick={singleMint}
-                  className="text-white w-full mt-2 border-[1px] p-2 border-[#3d4f7c] hover:bg-[#3d4f7c] rounded-full cursor-pointer"
-                >
-                  Mint Now
-                </button>
+                    <button
+                      disabled={!currentAccount}
+                      type="button"
+                      onClick={singleMint}
+                      className="text-white w-full mt-2 border-[1px] p-2 border-[#3d4f7c] hover:bg-[#3d4f7c] rounded-full enabled:cursor-pointer"
+                    >
+                      Mint Now
+                    </button>
               )}
           </div>
 
