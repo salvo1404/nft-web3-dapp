@@ -5,14 +5,15 @@ import { SiEthereum } from "react-icons/si";
 import { BsInfoCircle } from "react-icons/bs";
 import { ethers } from 'ethers';
 import { Loader } from ".";
+import { shortenAddress } from "../utils/utils";
+import { formatBalance } from "../utils/utils";
 
 // --------- Contract creation -------------
 import GoodFellas from '../artifacts/contracts/GoodFellas.sol/GoodFellas.json';
 
-const Welcome = () => {
+const Welcome = ({currentAccount, handleAccountChange}) => {
   const [contract, setContract] = useState(null);
   const [signer, setSigner] = useState(null);
-  const [currentAccount, setCurrentAccount] = useState("");
   const [currentBalance, setCurrentBalance] = useState(0);
   const [tokenCount, setTokenCount] = useState(0);
   const [nextTokenId, setNextTokenId] = useState(1);
@@ -57,7 +58,7 @@ const Welcome = () => {
 
       const accounts = await window.ethereum.request({ method: "eth_requestAccounts", });
 
-      setCurrentAccount(accounts[0]);
+      handleAccountChange(accounts[0]);
       window.location.reload();
     } catch (error) {
       console.log(error);
@@ -73,7 +74,7 @@ const Welcome = () => {
       const accounts = await window.ethereum.request({ method: "eth_accounts" });
 
       if (accounts.length) {
-        setCurrentAccount(accounts[0]);
+        handleAccountChange(accounts[0]);
 
       } else {
         console.log("No accounts found");
@@ -131,6 +132,24 @@ const Welcome = () => {
     setIsLoading(false);
   };
 
+
+  const fakeMint = async () => {  
+    try {
+
+      console.log('Start');
+      setIsLoading(true);
+      setTimeout(() => {
+        console.log('End');
+        setIsLoading(false);
+      }, 4000);
+
+    } catch (error) {
+        console.log(error)
+        alert(error);
+    }
+  };
+
+
   const freeMint = async () => {  
     try {
         // VIP Address
@@ -145,15 +164,6 @@ const Welcome = () => {
 
     getCount();
   };
-
-  const shortenAddress = (address) => `${address.slice(0, 5)}...${address.slice(address.length - 4)}`;
-
-  const formatBalance = (balance) => {
-    if (balance) {
-      return balance.slice(0,5) + ' ETH';
-    }
-    return '-';
-  }
 
   return (
     <div className="flex w-full justify-center items-center">
@@ -261,7 +271,7 @@ const Welcome = () => {
                     <button
                       disabled={!currentAccount}
                       type="button"
-                      onClick={mint}
+                      onClick={fakeMint}
                       className="text-white w-full mt-2 border-[1px] p-2 border-[#3d4f7c] hover:bg-[#3d4f7c] rounded-full enabled:cursor-pointer"
                     >
                       Mint Now
