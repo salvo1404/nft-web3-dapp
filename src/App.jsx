@@ -4,13 +4,13 @@ import './App.css'
 
 // import { Navbar, Welcome, Footer, Services, Transactions } from "./components";
 
-import { Navbar, Welcome, Footer, Services } from "./components";
+import { Navbar, Welcome, Install, Footer, Services } from "./components";
 
 const App = () => (
   <div className="min-h-screen">
     <div className="gradient-bg-welcome">
       <Navbar />
-      <Welcome />
+      {(window.ethereum) ? <Welcome /> : <Install />}
     </div>
     <Services />
     {/* <Transactions /> */}

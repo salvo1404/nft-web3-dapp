@@ -8,16 +8,9 @@ import { Loader } from ".";
 
 // --------- Contract creation -------------
 import GoodFellas from '../artifacts/contracts/GoodFellas.sol/GoodFellas.json';
-const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
-const provider = new ethers.providers.Web3Provider(window.ethereum);
-
-// get the signer
-const signer = provider.getSigner();
-
-// get the smart contract (GoodFellas Contract)
-const contract = new ethers.Contract(contractAddress, GoodFellas.abi, signer);
 
 const Welcome = () => {
+  const [contract, setContract] = useState(null);
   const [currentAccount, setCurrentAccount] = useState("");
   const [currentBalance, setCurrentBalance] = useState(0);
   const [tokenCount, setTokenCount] = useState(0);
@@ -32,20 +25,30 @@ const Welcome = () => {
   const costSingleToken = 0.2;
 
   useEffect(() => {
+    createContract();
     checkIfWalletIsConnect();
     checkBalance();
     getCount();
-  }, [currentAccount,tokenCount, tokenId, totalSupply]);
+  }, [currentAccount, currentBalance, tokenCount, tokenId, totalSupply]);
 
 
-  const handleSubmit = (e) => {
-    const { addressTo, amount, keyword, message } = formData;
+  const createContract = async () => {
+    try {
+      if (!window.ethereum) return alert("Please install MetaMask.");
 
-    e.preventDefault();
+      const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
 
-    if (!addressTo || !amount || !keyword || !message) return;
+      // get the signer
+      const signer = provider.getSigner();
 
-    sendTransaction();
+      // get the smart contract (GoodFellas Contract)
+      setContract(new ethers.Contract(contractAddress, GoodFellas.abi, signer));
+    } catch (error) {
+      console.log(error);
+
+      throw new Error("No ethereum object");
+    }
   };
 
   const connectWallet = async () => {
