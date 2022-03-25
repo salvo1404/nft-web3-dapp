@@ -16,7 +16,7 @@ contract GoodFellas is ERC721, ERC721URIStorage, Ownable {
     mapping(string => uint8) existingURIs;
     mapping (uint256 => string) private _tokenURIs;
 
-    constructor() ERC721("GoodFellas", "FTK") {
+    constructor() ERC721("GoodFellas", "GFT") {
         // Token counter starting from 1
         _tokenIdCounter.increment();
     }
@@ -50,7 +50,7 @@ contract GoodFellas is ERC721, ERC721URIStorage, Ownable {
     function multiMint(address recipient, string[] memory URIs, uint256 num) public payable returns (uint256[] memory) {
         require( num < 11, 'You can mint a maximum of 10' );
         require( count() + num < totalSupply, 'Exceeds maximum supply' );
-        require( msg.value >= 0.0005 ether * num, 'Not enough ETH sent, check price' );
+        require( msg.value >= 0.02 ether * num, 'Not enough ETH sent, check price' );
 
         uint256[] memory itemIds = new uint256[](num);
         for(uint256 i; i < num; i++){
@@ -65,7 +65,7 @@ contract GoodFellas is ERC721, ERC721URIStorage, Ownable {
         string memory metadataURI
     ) public payable returns (uint256) {
         require(existingURIs[metadataURI] != 1, 'NFT already minted!');
-        require (msg.value >= 0.0005 ether, 'Not enough ETH sent: check price.');
+        require (msg.value >= 0.02 ether, 'Not enough ETH sent: check price.');
         require(count() >= 0 && count() < totalSupply, "Exceeds token supply");
 
         uint256 newItemId = _tokenIdCounter.current();
@@ -82,7 +82,7 @@ contract GoodFellas is ERC721, ERC721URIStorage, Ownable {
         string memory metadataURI
     ) public payable returns (uint256) {
         require(existingURIs[metadataURI] != 1, 'NFT already minted!');
-        require (msg.value >= 0.0001 ether, 'Not enough ETH sent: check price.');
+        require (msg.value >= 0.01 ether, 'Not enough ETH sent: check price.');
         require (_tokenIdCounter.current() < 50, 'Whitelist mint is over!');
 
         uint256 newItemId = _tokenIdCounter.current();

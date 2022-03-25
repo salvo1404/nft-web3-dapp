@@ -11,25 +11,25 @@ import GoodFellas from '../artifacts/contracts/GoodFellas.sol/GoodFellas.json';
 
 const Welcome = () => {
   const [contract, setContract] = useState(null);
+  const [signer, setSigner] = useState(null);
   const [currentAccount, setCurrentAccount] = useState("");
   const [currentBalance, setCurrentBalance] = useState(0);
   const [tokenCount, setTokenCount] = useState(0);
-  const [tokenId, setTokenId] = useState(1);
+  const [nextTokenId, setNextTokenId] = useState(1);
   const [totalSupply, setTotalSupply] = useState(0);
   const [numerToMint, setNumerToMint] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
   const contentId = import.meta.env.VITE_CONTENT_ID;
-  const metadataURI = `ipfs://${contentId}/${tokenId}.json`;
-  const imageURI = `https://gateway.pinata.cloud/ipfs/${contentId}/${tokenId}.svg`;
-  const costSingleToken = 0.2;
+  const imageURI = `https://gateway.pinata.cloud/ipfs/${contentId}/${nextTokenId}.svg`;
+  const costSingleToken = 0.02;
 
   useEffect(() => {
     createContract();
     checkIfWalletIsConnect();
     checkBalance();
     getCount();
-  }, [currentAccount, currentBalance, tokenCount, tokenId, totalSupply]);
+  }, [currentAccount, currentBalance, tokenCount, nextTokenId, totalSupply]);
 
 
   const createContract = async () => {
@@ -40,10 +40,10 @@ const Welcome = () => {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
 
       // get the signer
-      const signer = provider.getSigner();
+      setSigner(provider.getSigner());
 
       // get the smart contract (GoodFellas Contract)
-      setContract(new ethers.Contract(contractAddress, GoodFellas.abi, signer));
+      setContract(new ethers.Contract(contractAddress, GoodFellas.abi, provider.getSigner()));
     } catch (error) {
       console.log(error);
 
@@ -100,23 +100,24 @@ const Welcome = () => {
 
     const count = await contract.count();
     setTokenCount(parseInt(count));
-    setTokenId(parseInt(count) + 1);
+    setNextTokenId(parseInt(count) + 1);
 
     const totalSupply = await contract.totalSupply();
     setTotalSupply(parseInt(totalSupply));
   };
 
-  const singleMint = async () => {  
+  const mint = async () => {  
     try {
-        if(!currentAccount) {
-          alert('Connect your wallet');
-          return;
-        }
+        if (!currentAccount) return alert('Connect your wallet');
+        if (numerToMint > 10) return alert('Max 10 per wallet');
+        
+        const numbers = Array(numerToMint).fill().map((_, idx) => nextTokenId + idx);
+        const metadataUriArray = numbers.map((id) => `ipfs://${contentId}/${id}.json`);
 
         // User Address
         setIsLoading(true);
         const userAddress = await signer.getAddress();
-        const result = await contract.singleMint(userAddress, metadataURI, {
+        const result = await contract.multiMint(userAddress, metadataUriArray, numerToMint, {
           value: ethers.utils.parseEther((costSingleToken*numerToMint).toString()),
         });
         await result.wait();
@@ -134,7 +135,8 @@ const Welcome = () => {
     try {
         // VIP Address
         const vipAddress1 = import.meta.env.VITE_VIP_ADDRESS_1;
-        const result = await contract.singleMint(vipAddress1, metadataURI);
+        const metadataURI = `ipfs://${contentId}/${nextTokenId}.json`;
+        const result = await contract.freeMint(vipAddress1, metadataURI);
         await result.wait();
     } catch (error) {
         console.log(error)
@@ -259,7 +261,7 @@ const Welcome = () => {
                     <button
                       disabled={!currentAccount}
                       type="button"
-                      onClick={singleMint}
+                      onClick={mint}
                       className="text-white w-full mt-2 border-[1px] p-2 border-[#3d4f7c] hover:bg-[#3d4f7c] rounded-full enabled:cursor-pointer"
                     >
                       Mint Now
