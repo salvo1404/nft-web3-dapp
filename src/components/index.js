@@ -4,4 +4,5 @@ export { default as Welcome } from "./Welcome";
 export { default as Install } from "./Install";
 export { default as Footer } from "./Footer";
 export { default as Services } from "./Services";
+export { default as TokenDialog } from "./TokenDialog";
 // export { default as Transactions } from "./Transactions";

@@ -4,7 +4,7 @@ import { AiFillPlayCircle } from "react-icons/ai";
 import { SiEthereum } from "react-icons/si";
 import { BsInfoCircle } from "react-icons/bs";
 import { ethers } from 'ethers';
-import { Loader } from ".";
+import { Loader, TokenDialog } from ".";
 
 // --------- Contract creation -------------
 import GoodFellas from '../artifacts/contracts/GoodFellas.sol/GoodFellas.json';
@@ -19,9 +19,10 @@ const Welcome = () => {
   const [totalSupply, setTotalSupply] = useState(0);
   const [numerToMint, setNumerToMint] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [isTokenDialogOpen, setIsTokenDialogOpen] = useState(false);
+  const [dialogTokenId, setDialogTokenId] = useState(0);
 
   const contentId = import.meta.env.VITE_CONTENT_ID;
-  const imageURI = `https://gateway.pinata.cloud/ipfs/${contentId}/${nextTokenId}.svg`;
   const costSingleToken = 0.02;
 
   useEffect(() => {
@@ -31,6 +32,10 @@ const Welcome = () => {
     getCount();
   }, [currentAccount, currentBalance, tokenCount, nextTokenId, totalSupply]);
 
+
+  function handleStateChange(state) {
+    setIsTokenDialogOpen(state)
+  }
 
   const createContract = async () => {
     try {
@@ -128,8 +133,28 @@ const Welcome = () => {
     }
 
     getCount();
+    setDialogTokenId(tokenCount);
+    setIsTokenDialogOpen(true);
     setIsLoading(false);
   };
+
+  // const fakeMint = async () => {  
+  //   try {
+
+  //     console.log('Start');
+  //     setIsLoading(true);
+  //     setTimeout(() => {
+  //       console.log('End');
+  //       setIsLoading(false);
+  //       setDialogTokenId(tokenCount);
+  //       setIsTokenDialogOpen(true);
+  //     }, 1000);
+
+  //   } catch (error) {
+  //       console.log(error)
+  //       alert(error);
+  //   }
+  // };
 
   const freeMint = async () => {  
     try {
@@ -272,7 +297,7 @@ const Welcome = () => {
 
         </div>
 
-
+        <TokenDialog openState={isTokenDialogOpen} handleStateChange={handleStateChange} tokenId={dialogTokenId}/>
 
       </div>
     </div>
