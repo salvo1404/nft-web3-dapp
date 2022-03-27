@@ -37,10 +37,6 @@
   }
 }
 
-.token-dialog-img-loading {
-  background: url('../images/Preloader_1.gif') center no-repeat;
-}
-
 button {
   font-size: calc(10px + 2vmin);
 }

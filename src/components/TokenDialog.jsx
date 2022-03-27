@@ -1,18 +1,18 @@
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment, useState, useEffect } from 'react'
+import { Loader } from ".";
 
 export default function TokenDialog({openState, handleStateChange, tokenId}) {
-  let [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   const openSea = import.meta.env.VITE_RINKEBY_OPENSEA + '/assets/' + import.meta.env.VITE_CONTRACT_ADDRESS + '/' +tokenId;
   // TODO: Additional button Copy your Token URI
   const tokenURI = `ipfs://${import.meta.env.VITE_CONTENT_ID}/${tokenId}.json`;
   const imageURI = `https://gateway.pinata.cloud/ipfs/${import.meta.env.VITE_CONTENT_ID}/${tokenId}.svg`;
 
-  console.log('Here = ' + tokenId);
   useEffect(() => {
     checkState();
-    console.log('There = ' + tokenId);
   }, [openState]);
 
   function checkState() {
@@ -28,7 +28,12 @@ export default function TokenDialog({openState, handleStateChange, tokenId}) {
 
   function openModal() {
     handleStateChange(true);
-    setIsOpen(true)
+    setIsOpen(true);
+    setIsImageLoaded(false);
+  }
+
+  function handleImageLoaded() {
+    setIsImageLoaded(true);
   }
 
   return (
@@ -91,8 +96,13 @@ export default function TokenDialog({openState, handleStateChange, tokenId}) {
                     Congratulation, your GoodFellas has been successfully minted.
                     <br/> Please visit <a href={openSea} target="_blank" className="underline">OpenSea</a> and enjoy your NFT.
                   </p>
-                  <img className="token-dialog-img-loading w-full items-center justify-center text-center" src={tokenId ? imageURI : '../images/placeholder.png'}></img>
-                  
+
+                  <div>
+                      {!isImageLoaded &&
+                      <Loader />
+                      }
+                      <img onLoad={handleImageLoaded} className="w-full items-center justify-center text-center" src={tokenId ? imageURI : '../images/placeholder.png'}></img>
+                  </div>
                 </div>
 
                 
