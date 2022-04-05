@@ -189,9 +189,11 @@ const Welcome = () => {
           <h1 className="text-3xl sm:text-5xl text-white text-gradient py-1">
             Mint your <br /> GoodFellas
           </h1>
+          {!currentAccount && (
           <p className="text-center mt-5 text-white font-light md:w-9/12 w-11/12 text-base">
             Use Metamask to connect your wallet
           </p>
+          )}
           {!currentAccount && (
             <button
               type="button"
@@ -205,7 +207,7 @@ const Welcome = () => {
             </button>
           )}
 
-          <div className="p-3 flex justify-start items-start flex-col rounded-xl h-40 sm:w-72 w-full my-5 eth-card .white-glassmorphism ">
+          <div className="p-3 flex justify-start items-start flex-col rounded-xl h-52 sm:w-80 w-full my-5 eth-card .white-glassmorphism ">
             <div className="flex justify-between flex-col w-full h-full">
               <div className="flex justify-between items-start">
                 <div className="w-10 h-10 rounded-full border-2 border-white flex justify-center items-center">
